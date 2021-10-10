@@ -1,5 +1,7 @@
 package files.bagmet;
 
+import com.codeborne.pdftest.PDF;
+import static com.codeborne.pdftest.assertj.Assertions.assertThat;
 import com.opencsv.CSVReader;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
@@ -10,10 +12,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static com.codeborne.selenide.Selenide.$;
@@ -62,5 +60,14 @@ public class TestsForFiles {
             );
 
         }
+    }
+
+    @Test
+    void pdfFileTest() throws IOException {
+        PDF pdf = new PDF(getClass().getClassLoader().getResource("Software Testing - Base Course.pdf"));
+        assertThat(pdf.author).isEqualTo("Святослав Куликов");
+        assertThat(pdf.title).contains("Тестирование программного обеспечения");
+        assertThat(pdf).containsExactText("Виды и направления тестирования");
+        assertThat(pdf.numberOfPages).isEqualTo(300);
     }
 }
