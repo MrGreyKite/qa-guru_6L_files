@@ -2,20 +2,20 @@ package files.bagmet;
 
 import com.codeborne.pdftest.PDF;
 import static com.codeborne.pdftest.assertj.Assertions.assertThat;
+
+import com.codeborne.xlstest.XLS;
 import com.opencsv.CSVReader;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.open;
+import static org.apache.commons.io.FilenameUtils.getBaseName;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.contentOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,11 +63,26 @@ public class TestsForFiles {
     }
 
     @Test
-    void pdfFileTest() throws IOException {
-        PDF pdf = new PDF(getClass().getClassLoader().getResource("Software Testing - Base Course.pdf"));
-        assertThat(pdf.author).isEqualTo("Святослав Куликов");
-        assertThat(pdf.title).contains("Тестирование программного обеспечения");
-        assertThat(pdf).containsExactText("Виды и направления тестирования");
-        assertThat(pdf.numberOfPages).isEqualTo(300);
+    void pdfFileTest() throws Exception {
+        try (InputStream stream = getClass().getClassLoader().getResourceAsStream("Software Testing - Base Course.pdf")) {
+            PDF pdf = new PDF(stream);
+            assertThat(pdf.author).isEqualTo("Святослав Куликов");
+            assertThat(pdf.title).contains("Тестирование программного обеспечения");
+            assertThat(pdf).containsExactText("Виды и направления тестирования");
+            assertThat(pdf.numberOfPages).isEqualTo(300);
+        }
     }
+
+    @Test
+    void ExcelFileTest() throws Exception {
+            XLS xlsxFile = new XLS(getClass().getClassLoader().getResource("Report 2021-10-03.xlsx"));
+            File xlsx = new File(getClass().getClassLoader().getResource("Report 2021-10-03.xlsx").getFile());
+
+            String dateOfReport = "2021-10-03";
+
+            assertThat(xlsxFile.excel.getSheetAt(0).getRow(0).getCell(0).getStringCellValue()).isEqualTo("Дата формирования отчета");
+            assertThat(xlsxFile.excel.getSheetAt(0).getRow(1).getCell(0).getStringCellValue()).isEqualTo(dateOfReport);
+            assertThat(getBaseName(xlsx.toString())).isEqualTo("Report%20" + dateOfReport);
+    }
+
 }
