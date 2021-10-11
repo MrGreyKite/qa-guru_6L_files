@@ -1,2 +1,1 @@
 Hello Java automation!
-пароль fireburn2

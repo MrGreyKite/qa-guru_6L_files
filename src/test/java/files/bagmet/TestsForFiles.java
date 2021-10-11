@@ -5,12 +5,15 @@ import static com.codeborne.pdftest.assertj.Assertions.assertThat;
 
 import com.codeborne.xlstest.XLS;
 import com.opencsv.CSVReader;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import static com.codeborne.selenide.Selenide.$;
@@ -83,6 +86,32 @@ public class TestsForFiles {
             assertThat(xlsxFile.excel.getSheetAt(0).getRow(0).getCell(0).getStringCellValue()).isEqualTo("Дата формирования отчета");
             assertThat(xlsxFile.excel.getSheetAt(0).getRow(1).getCell(0).getStringCellValue()).isEqualTo(dateOfReport);
             assertThat(getBaseName(xlsx.toString())).isEqualTo("Report%20" + dateOfReport);
+    }
+
+    @Test
+    void ZipPasswordFileTest() throws IOException, URISyntaxException {
+        String source = "./src/test/resources/textZipPassword.zip";
+        String destination = "./src/test/resources/unzip";
+        String password = "fireburn2";
+        File destinationFolder = new File(destination);
+        int numberOfExpectedEntries = 1;
+
+        ZipFile zip = new ZipFile(source, password.toCharArray());
+            assertThat(zip.isEncrypted()).isTrue();
+            assertThat(zip.getFileHeaders().size()).as("Число файлов внутри архива")
+                    .isEqualTo(numberOfExpectedEntries);
+
+        zip.extractAll(destination); // ИЛИ destinationFolder.getPath()
+
+        assertThat(destinationFolder.listFiles()).hasSize(numberOfExpectedEntries);
+
+        File[] filesInDestinationFolder = destinationFolder.listFiles();
+
+        for (File file : filesInDestinationFolder) {
+            File sourceFile = new File(getClass().getClassLoader().getResource(file.getName()).toURI());
+            assertThat(file.length()).isEqualTo(sourceFile.length());
+        }
+
     }
 
 }
